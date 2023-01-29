@@ -39,12 +39,12 @@ contract LiquidStakingManager is AccessControlUpgradeable {
         _;
     }
 
-    function pause() external {
+    function pause() external onlyRole(MANAGER) {
         require(!paused, "Already paused");
         paused = true;
     }
 
-    function unpause() external {
+    function unpause() external onlyRole(MANAGER) {
         require(paused, "Not paused");
         paused = false;
     }
