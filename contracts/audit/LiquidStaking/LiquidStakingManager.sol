@@ -95,9 +95,9 @@ contract LiquidStakingManager is AccessControlUpgradeable {
 
     function deleteSelector(bytes4 selector) public onlyRole(MANAGER) {
         require(selectorToAddress[selector] != address(0), "The selector was not set");
-        selectorToAddress[selector] = address(0);
-
         _deleteSelector(selector);
+
+        selectorToAddress[selector] = address(0);
     }
 
     function changeSelector(bytes4 oldSelector, bytes4 newSelector) external onlyRole(MANAGER) {
