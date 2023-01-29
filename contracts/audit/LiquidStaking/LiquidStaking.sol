@@ -65,13 +65,4 @@ contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy 
         /// @dev address(0) should changed on LiquidStakingManager contract address
         return ILiquidStakingManager(liquidStakingManager).getAddress(msg.sig);
     }
-
-    // --------------------------------------------------------------------
-    // Mock functions // Functions for tests only -------------------------
-    // --------------------------------------------------------------------
-
-    /// @notice function for tests
-    function setting() external onlyRole(MANAGER) {
-        DAPPS_STAKING.set_reward_destination(DappsStaking.RewardDestination.FreeBalance);
-    }
 }   
