@@ -28,6 +28,7 @@ contract LiquidStakingManager is AccessControlUpgradeable {
 
     function initialize() public initializer {
         paused = false;
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MANAGER, msg.sender);
     }
 
