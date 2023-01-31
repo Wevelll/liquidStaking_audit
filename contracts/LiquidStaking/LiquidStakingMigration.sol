@@ -90,7 +90,7 @@ contract LiquidStakingMigration is AccessControlUpgradeable, LiquidStakingStorag
     ///      for each user to calculate his rewards for the past era
     /// @dev before starting the migration, you need to make a claim of 
     ///      rewards for all past eras and call the sync function for all non-updated eras
-    function migrateStorage(address _user) public onlyRole(MANAGER) {
+    function migrateStorage(address _user) external onlyRole(MANAGER) {
         if (_user == address(0)) return;
 
         uint256 _era = currentEra();

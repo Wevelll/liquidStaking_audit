@@ -3,11 +3,11 @@ pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "./interfaces/DappsStaking.sol";
-import "./NDistributor.sol"; /* unused and will removed with next proxy update */
-import "./interfaces/IPartnerHandler.sol"; /* 1 -> 1.5 will removed with next proxy update */
-import "./interfaces/INFTDistributor.sol";
-import "./interfaces/IAdaptersDistributor.sol";
+import "../interfaces/DappsStaking.sol";
+import "../NDistributor.sol"; /* unused and will removed with next proxy update */
+import "../interfaces/IPartnerHandler.sol"; /* 1 -> 1.5 will removed with next proxy update */
+import "../interfaces/INFTDistributor.sol";
+import "../interfaces/IAdaptersDistributor.sol";
 
 abstract contract LiquidStakingStorage {
     DappsStaking public constant DAPPS_STAKING =

@@ -4,7 +4,7 @@ pragma solidity 0.8.4;
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "./LiquidStakingStorage.sol";
 import "@openzeppelin/contracts/proxy/Proxy.sol";
-import "./interfaces/ILiquidStakingManager.sol";
+import "../interfaces/ILiquidStakingManager.sol";
 
 contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy {
     using AddressUpgradeable for address payable;
@@ -19,10 +19,9 @@ contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy 
         string memory _DNTname,
         string memory _utilName,
         address _distrAddr
-    ) public initializer {
+    ) external initializer {
         require(_distrAddr.isContract(), "_distrAddr should be contract address");
         DNTname = _DNTname;
-        utilName = _utilName;
 
         uint256 era = currentEra() - 1;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -37,10 +36,10 @@ contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy 
         lastUnstaked = era;
         lastClaimed = era;
 
-        dappsList.push(_dntUtil);
-        haveUtility[_dntUtil] = true;
-        isActive[_dntUtil] = true;
-        dapps[_dntUtil].dappAddress = address(this);
+        dappsList.push(_utilName);
+        haveUtility[_utilName] = true;
+        isActive[_utilName] = true;
+        dapps[_utilName].dappAddress = address(this);
     }
 
     function initialize2(address _nftDistr, address _adaptersDistr) external onlyRole(MANAGER) {
@@ -59,6 +58,14 @@ contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy 
         require(_liquidStakingManager != address(0), "Address cant be null");
         require(_liquidStakingManager.isContract(), "Manager should be contract!");
         liquidStakingManager = _liquidStakingManager;
+    }
+
+    /// @notice sets min stake amount
+    /// @param _amount => new min stake amount
+    function setMinStakeAmount(uint _amount) public onlyRole(MANAGER) {
+        require(_amount > 0, "Should be greater than zero!");
+        minStakeAmount = _amount;
+        emit SetMinStakeAmount(msg.sender, _amount);
     }
 
     function _implementation() internal view override returns (address) {

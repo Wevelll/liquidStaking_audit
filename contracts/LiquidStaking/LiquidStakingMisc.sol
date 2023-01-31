@@ -45,14 +45,6 @@ contract LiquidStakingMisc is AccessControlUpgradeable, LiquidStakingStorage {
     function getUserWithdrawals() external view returns (Withdrawal[] memory) {
         return withdrawals[msg.sender];
     }
-
-    /// @notice sets min stake amount
-    /// @param _amount => new min stake amount
-    function setMinStakeAmount(uint _amount) public onlyRole(MANAGER) {
-        require(_amount > 0, "Should be greater than zero!");
-        minStakeAmount = _amount;
-        emit SetMinStakeAmount(msg.sender, _amount);
-    }
     
     /*
     /// @notice manually fill the unbonded pool
