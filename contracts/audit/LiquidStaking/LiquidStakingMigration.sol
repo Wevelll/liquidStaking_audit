@@ -37,7 +37,9 @@ contract LiquidStakingMigration is AccessControlUpgradeable, LiquidStakingStorag
                     arr[j] = s;
                 }
             }
+            
             if (!swapped) {
+                if (len % 2 == 0) return (arr[len/2] + arr[len/2 - 1])/2;
                 return arr[len/2];
             }
         }
