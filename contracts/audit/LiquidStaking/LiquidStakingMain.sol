@@ -380,7 +380,14 @@ contract LiquidStakingMain is AccessControlUpgradeable, LiquidStakingStorage {
 
         emit Synchronization(msg.sender, _era);
     }
-    
+
+    /// @notice function for tests
+    /// @dev call it after registering the dapp in DAPPS_STAKING
+    /// @dev so that the reward is not restaked and we are free to distribute it
+    function setFreeDest() external onlyRole(MANAGER) {
+        DAPPS_STAKING.set_reward_destination(DappsStaking.RewardDestination.FreeBalance);
+    }
+
     /// @notice utility harvest function
     function syncHarvest(address _user, string[] memory _utilities) 
     external

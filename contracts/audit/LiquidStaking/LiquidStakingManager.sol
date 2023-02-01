@@ -27,6 +27,7 @@ contract LiquidStakingManager is AccessControlUpgradeable {
 
     function initialize() public initializer {
         paused = false;
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MANAGER, msg.sender);
     }
 
@@ -38,12 +39,12 @@ contract LiquidStakingManager is AccessControlUpgradeable {
         _;
     }
 
-    function pause() external {
+    function pause() external onlyRole(MANAGER) {
         require(!paused, "Already paused");
         paused = true;
     }
 
-    function unpause() external {
+    function unpause() external onlyRole(MANAGER) {
         require(paused, "Not paused");
         paused = false;
     }
@@ -93,9 +94,9 @@ contract LiquidStakingManager is AccessControlUpgradeable {
 
     function deleteSelector(bytes4 selector) public onlyRole(MANAGER) {
         require(selectorToAddress[selector] != address(0), "The selector was not set");
-        selectorToAddress[selector] = address(0);
-
         _deleteSelector(selector);
+
+        selectorToAddress[selector] = address(0);
     }
 
     function changeSelector(bytes4 oldSelector, bytes4 newSelector) external onlyRole(MANAGER) {
