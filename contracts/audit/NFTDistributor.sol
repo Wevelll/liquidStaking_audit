@@ -429,7 +429,7 @@ contract NFTDistributor is AccessControl {
     /// since many nft contracts (and utilities, respectively) are not planned
     function _removeNft(string[] storage nftList, string memory utilName) private returns (bool) {
         uint256 l = nftList.length;
-        bytes32 utilNameHash = keccak256(abi.encodePacked(utilName))
+        bytes32 utilNameHash = keccak256(abi.encodePacked(utilName));
         for (uint256 i; i < l; i++) {
             if (keccak256(abi.encodePacked(nftList[i])) == utilNameHash) {
                 nftList[i] = nftList[l - 1];

@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 contract LiquidStakingManager is AccessControlUpgradeable {
     bytes32 public constant MANAGER = keccak256("MANAGER");
 
-    address public diamondAddress;
     bool public paused;
 
     address[] public addresses;

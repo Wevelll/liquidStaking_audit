@@ -191,7 +191,7 @@ contract LiquidStakingMain is AccessControlUpgradeable, LiquidStakingStorage {
 
     /// @notice finish previously opened withdrawal
     /// @param _id => withdrawal index
-    function withdraw(uint _id) external updateAll() {
+    function withdraw(uint _id) external updateAll {
         Withdrawal storage withdrawal = withdrawals[msg.sender][_id];
         uint val = withdrawal.val;
         uint era = currentEra();
@@ -229,7 +229,7 @@ contract LiquidStakingMain is AccessControlUpgradeable, LiquidStakingStorage {
         uint256 l = dappsList.length;
 
         /// @custom:defimoon-note separately, we collect rewards for the first unclaimed era and for all the rest.
-        /// this is due to the fact that <lastEtaTotalBalance> is updated at the moment of the previous era, 
+        /// this is due to the fact that <lastEraTotalBalance> is updated at the moment of the previous era, 
         /// and if the <updates()> function is not called in the next era, then the balance staked in the current era 
         /// will not participate in the <accumulatedRewardsPerShare> calculation.
         /// Therefore, to avoid such situations, the balance for subsequent eras is written to <eraBuffer>.
@@ -429,7 +429,7 @@ contract LiquidStakingMain is AccessControlUpgradeable, LiquidStakingStorage {
     /// @param _user => user address
     function _updateUserBalanceInUtility(string memory _utility, address _user) private  {
         require(_user != address(0), "Zero address alarm!");
-        uint256 _amount = distr1_5.getUserDntBalanceInUtil(_user, _utility, DNTname);
+        uint256 _amount = distr.getUserDntBalanceInUtil(_user, _utility, DNTname);
         _updateUserBalance(_utility, _user, _amount);
     }
 
@@ -490,7 +490,7 @@ contract LiquidStakingMain is AccessControlUpgradeable, LiquidStakingStorage {
             }
         }
 
-        require(transferAmount > 0, "Nothing to cliam");
+        require(transferAmount > 0, "Nothing to claim");
         payable(msg.sender).sendValue(transferAmount);
 
         emit Claimed(msg.sender, transferAmount);

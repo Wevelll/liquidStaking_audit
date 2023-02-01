@@ -8,8 +8,9 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "./interfaces/IPancakeRouter01.sol";
 import "./interfaces/IMasterChef.sol";
 import "./interfaces/IPancakePair.sol";
+import "./interfaces/IPartnerHandler.sol";
 
-contract ArthswapAdapter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract ArthswapAdapter is OwnableUpgradeable, ReentrancyGuardUpgradeable, IPartnerHandler {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
     using AddressUpgradeable for address payable;
@@ -36,6 +37,8 @@ contract ArthswapAdapter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     mapping(address => uint256) public rewards;
     mapping(address => uint256) public depositedLp;
     mapping(address => uint256) public rewardDebt;
+
+    address public constant WASTR = 0xAeaaf0e2c81Af264101B9129C00F4440cCF0F720;
 
     //Events
     event AddLiquidity(
@@ -374,7 +377,7 @@ contract ArthswapAdapter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     // @notice Get share of n tokens in pool for user
     // @param _user User's address
-    function calc(address _user) external view returns (uint256 nShare) {
+    function calc(address _user) external override view returns (uint256 nShare) {
         (, uint256 nTokensReserves) = _getSortedReserves();
         nShare =
             ((lpBalances[_user] + depositedLp[_user]) * nTokensReserves) /
