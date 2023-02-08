@@ -22,6 +22,7 @@ contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy 
     ) external initializer {
         require(_distrAddr.isContract(), "_distrAddr should be contract address");
         DNTname = _DNTname;
+        utilName = _utilName;
 
         uint256 era = currentEra() - 1;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
