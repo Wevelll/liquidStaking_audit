@@ -8,8 +8,9 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "./interfaces/IZenlinkRouter.sol";
 import "./interfaces/IZenlinkFarm.sol";
 import "./interfaces/IZenlinkPair.sol";
+import "./interfaces/IPartnerHandler.sol";
 
-contract ZenlinkAdapter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract ZenlinkAdapter is OwnableUpgradeable, ReentrancyGuardUpgradeable, IPartnerHandler {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
     using AddressUpgradeable for address payable;
