@@ -389,7 +389,7 @@ contract ZenlinkAdapter is OwnableUpgradeable, ReentrancyGuardUpgradeable, IPart
 
     // @notice Get share of n tokens in pool for user
     // @param _user User's address
-    function calc(address _user) external view returns (uint256 nShare) {
+    function calc(address _user) external override view returns (uint256 nShare) {
         (, uint256 nTokensReserves) = _getSortedReserves(pair);
         nShare =
             ((lpBalances[_user] + depositedLp[_user]) * nTokensReserves) /
