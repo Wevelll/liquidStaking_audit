@@ -145,7 +145,7 @@ describe("Algem app", function () {
         let tx = await liquidStaking.connect(signer).stake([consts.util], [amount.div(2)], {value: amount.div(2)});
         await tx.wait();
 
-        tx = await liquidStaking.setting();
+        tx = await liquidStaking.setFreeDest();
         await tx.wait();
 
         tx = await liquidStaking.connect(acc).stake([consts.util], [amount.div(2)], {value: amount.div(2)});

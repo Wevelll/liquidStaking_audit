@@ -121,9 +121,9 @@ describe("Algem app", function () {
         console.log("staked");
 
         try {
-            let _tx = await liquidStaking.setting();
+            let _tx = await liquidStaking.setFreeDest();
             await _tx.wait();
-            console.log("setting");
+            console.log("setFreeDest");
         } catch(_) {}
 
         await nextEra();
