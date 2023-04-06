@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./interfaces/ILiquidStaking.sol";
 import "./interfaces/IDNT.sol";
-import "./NDistributor.sol";
+import "./interfaces/INDistributor.sol";
 import "./Algem721.sol";
 
-contract NFTDistributor is AccessControl {
+contract NFTDistributor is Initializable, AccessControlUpgradeable {
     bytes32 public constant MANAGER = keccak256("MANAGER");
     bytes32 public constant TOKEN_CONTRACT = keccak256("TOKEN_CONTRACT");
 
-    uint8 public immutable LIQUIDSTAKING_FEE;
+    uint8 public LIQUIDSTAKING_FEE;
 
     ILiquidStaking public liquidStaking;
-    NDistributor public distr;
+    INDistributor public distr;
     IDNT public nAstr;
     address public adaptersDistributor;
 
@@ -81,13 +82,18 @@ contract NFTDistributor is AccessControl {
 
     mapping(string => bool) public isUtilRemoved;
 
-    constructor(
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor(){
+        _disableInitializers();        
+    }
+
+    function initialize(
         address _distr,
         address _nAstr,
         address _liquidStaking,
-        address _adaptersDistributor) {
+        address _adaptersDistributor) public initializer {
         
-        distr = NDistributor(_distr);
+        distr = INDistributor(_distr);
         nAstr = IDNT(_nAstr);
         liquidStaking = ILiquidStaking(_liquidStaking);
 
@@ -273,7 +279,7 @@ contract NFTDistributor is AccessControl {
         require(LIQUIDSTAKING_FEE >= _rewardFee, "Cant exceed default fee value");
         require(_rewardFee > 0, "Cant set zero fee");
 
-        string memory _utilName = Algem721(_contractAddress).utilName();
+        string memory _utilName = AlgemLiquidStakingDiscount(_contractAddress).utilName();
         require(!isUtilRemoved[_utilName], "Utility blacklisted!");
         require(!haveUtil[_utilName], "Already have utility");
 
@@ -308,7 +314,7 @@ contract NFTDistributor is AccessControl {
     /// @notice function for removing utility by nft contract address. 
     /// @param _contractAddress => nft contract address.
     function removeUtilityByAddress(address _contractAddress) external onlyRole(MANAGER) {
-        string memory _utilName = Algem721(_contractAddress).utilName();
+        string memory _utilName = AlgemLiquidStakingDiscount(_contractAddress).utilName();
         removeUtility(_utilName);
     }
 
@@ -321,7 +327,7 @@ contract NFTDistributor is AccessControl {
     /// @param to => address of the recipient.
     /// @return isFirstNft => returns true if the user has not previously had such nfts.
     function _addNftToUser(string memory utility, address to) private returns (bool) {
-        if (Algem721(utils[utility].contractAddress).balanceOf(to) == 0) {
+        if (AlgemLiquidStakingDiscount(utils[utility].contractAddress).balanceOf(to) == 0) {
             UserInfo storage user = users[to];
 
             uint256 era = liquidStaking.currentEra();
@@ -375,7 +381,7 @@ contract NFTDistributor is AccessControl {
     /// @param amount => amount of removing nfts;
     /// @return isLastNft => returns true if the user no longer has such nfts.
     function _removeNftFromUser(string memory utility, address from, uint256 amount) private returns (bool) {
-        if (Algem721(utils[utility].contractAddress).balanceOf(from) <= amount) {
+        if (AlgemLiquidStakingDiscount(utils[utility].contractAddress).balanceOf(from) <= amount) {
             UserInfo storage user = users[from];
             uint256 era = liquidStaking.currentEra();
 

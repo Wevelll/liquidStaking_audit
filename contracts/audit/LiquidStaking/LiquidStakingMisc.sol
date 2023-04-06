@@ -2,12 +2,13 @@
 pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+
 import "./LiquidStakingStorage.sol";
 
 contract LiquidStakingMisc is AccessControlUpgradeable, LiquidStakingStorage {
     using AddressUpgradeable for address payable;
     using AddressUpgradeable for address;
-    
+
     /// @notice add new partner dapp
     /// @param _utility => dapp utility name
     /// @param _dapp => dapp address
@@ -35,6 +36,11 @@ contract LiquidStakingMisc is AccessControlUpgradeable, LiquidStakingStorage {
         }
     }
 
+    /// @notice returns array of registered dapps
+    function getDappsList() external view returns (string[] memory _dapps) {
+        _dapps = dappsList;
+    }
+
     /// @notice return users rewards
     /// @param _user => user address
     function getUserRewards(address _user) public view returns (uint) {
@@ -42,10 +48,9 @@ contract LiquidStakingMisc is AccessControlUpgradeable, LiquidStakingStorage {
     }
 
     /// @notice returns user active withdrawals
-    function getUserWithdrawals() external view returns (Withdrawal[] memory) {
-        return withdrawals[msg.sender];
-    }
-    
+    //function getUserWithdrawals() external view returns (Withdrawal[] memory) {
+    //    return withdrawals[msg.sender];
+    //}
     /*
     /// @notice manually fill the unbonded pool
     function fillUnbonded() external payable {
@@ -54,7 +59,7 @@ contract LiquidStakingMisc is AccessControlUpgradeable, LiquidStakingStorage {
 
         emit FillUnbonded(msg.sender, msg.value);
     }
-
+    */
     /// @notice utility func for filling reward pool manually
     function fillRewardPool() external payable {
         require(msg.value > 0, "Provide some value!");
@@ -62,7 +67,7 @@ contract LiquidStakingMisc is AccessControlUpgradeable, LiquidStakingStorage {
 
         emit FillRewardPool(msg.sender, msg.value);
     }
-
+    /*
     /// @notice manually fill the unstaking pool
     function fillUnstaking() external payable {
         require(msg.value > 0, "Provide some value!");
@@ -70,7 +75,7 @@ contract LiquidStakingMisc is AccessControlUpgradeable, LiquidStakingStorage {
 
         emit FillUnstaking(msg.sender, msg.value);
     }
-
+    */
     /// @notice withdraw revenu function
     function withdrawRevenue(uint _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(totalRevenue >= _amount, "Not enough funds in revenue pool");
@@ -79,7 +84,7 @@ contract LiquidStakingMisc is AccessControlUpgradeable, LiquidStakingStorage {
 
         emit WithdrawRevenue(_amount);
     }
-
+    /*
     /// @notice disabled revoke ownership functionality
     function revokeRole(bytes32 role, address account)
         public

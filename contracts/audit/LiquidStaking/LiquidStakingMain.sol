@@ -172,13 +172,21 @@ contract LiquidStakingMain is AccessControlUpgradeable, LiquidStakingStorage {
 
     /// @notice claim all user rewards from all utilities (without adapters)
     function claimAll() external updateAll {
-        string[] memory _utilities = distr.listUserUtilitiesInDnt(msg.sender, DNTname);
+        string[] memory _distrutilities = distr.listUserUtilitiesInDnt(msg.sender, DNTname);
+        uint256 l = _distrutilities.length;
 
-        uint256 l = _utilities.length;
-        uint256[] memory _amounts = new uint256[](l);
+        uint256[] memory _amounts = new uint256[](l+1);
+        string[] memory _utilities = new string[](l+1);
+
+        // basically we just need to append one utility :(
+        for(uint i; i < l; i++) {
+            
+            _utilities[i] = _distrutilities[i];
+        }
+        _utilities[l] = "AdaptersUtility";
 
         // update user rewards and push to _amounts[]
-        for (uint256 i; i < l; i++) {
+        for (uint256 i; i < l+1; i++) {
             harvestRewards(_utilities[i], msg.sender);
             _amounts[i] = dapps[_utilities[i]].stakers[msg.sender].rewards;
         }

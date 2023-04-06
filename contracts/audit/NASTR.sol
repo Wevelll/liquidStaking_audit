@@ -1,42 +1,58 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Snapshot.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "./NDistributor.sol";
-import "./NFTDistributor.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20SnapshotUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "./interfaces/INDistributor.sol";
+import "./interfaces/INFTDistributor.sol";
 
 contract NASTR is
-    ERC20,
-    ERC20Burnable,
-    ERC20Snapshot,
-    ERC20Permit,
-    Pausable,
-    AccessControl
+    Initializable,
+    ERC20Upgradeable,
+    ERC20BurnableUpgradeable,
+    ERC20SnapshotUpgradeable,
+    ERC20PermitUpgradeable,
+    PausableUpgradeable,
+    AccessControlUpgradeable
 {
     bytes32 public constant DISTR_ROLE = keccak256("DISTR_ROLE");
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
-    NDistributor distributor;
+    INDistributor public distributor;
 
     bool private isMultiTransfer;
     bool private isNote;
     string private utilityToTransfer;
 
-    NFTDistributor public nftDistr;
+    INFTDistributor public nftDistr;
 
-    using Address for address;
+    using AddressUpgradeable for address;
 
-    constructor(address _distributor) ERC20("Astar Note", "nASTR") ERC20Permit("Astar Note") {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+		_disableInitializers();
+	}
+
+    function initialize(address _distributor) public initializer {
         require(_distributor.isContract(), "_distributor should be contract address");
+
+        __ERC20_init("Astar Note", "nASTR");
+        __ERC20Permit_init("Astar Note");
+        __Pausable_init();
+        __ERC20Burnable_init();
+        __ERC20Snapshot_init();
+        __AccessControl_init();
+
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(DISTR_ROLE, _distributor);
         _grantRole(OWNER_ROLE, msg.sender);
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        distributor = NDistributor(_distributor);
+
+        distributor = INDistributor(_distributor);
     }
 
     modifier noteTransfer(string memory utility) {
@@ -47,7 +63,7 @@ contract NASTR is
     }
 
     function setNftDistributor(address _nftDistr) external onlyRole(OWNER_ROLE) {
-        nftDistr = NFTDistributor(_nftDistr);
+        nftDistr = INFTDistributor(_nftDistr);
     }
 
     // @param       issue DNT token
@@ -116,7 +132,7 @@ contract NASTR is
         address from,
         address to,
         uint256 amount
-    ) internal override(ERC20, ERC20Snapshot) whenNotPaused {
+    ) internal override(ERC20Upgradeable, ERC20SnapshotUpgradeable) whenNotPaused {
         super._beforeTokenTransfer(from, to, amount);
 
         if (isNote) {

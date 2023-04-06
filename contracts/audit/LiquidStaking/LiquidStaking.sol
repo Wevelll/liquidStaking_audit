@@ -10,6 +10,11 @@ contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy 
     using AddressUpgradeable for address payable;
     using AddressUpgradeable for address;
 
+    modifier whenNotPaused() {
+        require(!paused || hasRole(MANAGER, msg.sender), "Contract paused");
+        _;
+    }
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -55,6 +60,17 @@ contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy 
         lastEraTotalBalance = distr.totalDnt(DNTname);
     }
 
+    function pause() external onlyRole(MANAGER) {
+        require(!paused, "Already paused");
+        paused = true;
+    }
+
+    function unpause() external onlyRole(MANAGER) {
+        require(paused, "Not paused");
+        paused = false;
+    }
+
+
     function setLiquidStakingManager(address _liquidStakingManager) external onlyRole(MANAGER) {
         require(_liquidStakingManager != address(0), "Address cant be null");
         require(_liquidStakingManager.isContract(), "Manager should be contract!");
@@ -69,8 +85,31 @@ contract LiquidStaking is AccessControlUpgradeable, LiquidStakingStorage, Proxy 
         emit SetMinStakeAmount(msg.sender, _amount);
     }
 
-    function _implementation() internal view override returns (address) {
+    function _implementation() internal view override whenNotPaused returns (address) {
         /// @dev address(0) should changed on LiquidStakingManager contract address
         return ILiquidStakingManager(liquidStakingManager).getAddress(msg.sig);
+    }
+
+    /// @notice finish previously opened withdrawal
+    /// @param _id => withdrawal index
+    function withdraw(uint _id) external {
+        _delegate(_implementation());
+    }
+
+    function getStaker(string memory _utility, address _user, uint256 _era) public view returns (uint256 eraBalance_, bool isZeroBalance_, uint256 rewards_, uint256 lastClaimedEra_) {
+        Staker storage s = dapps[_utility].stakers[_user];
+        eraBalance_ = s.eraBalance[_era];
+        isZeroBalance_ = s.isZeroBalance[_era];
+        rewards_ = s.rewards;
+        lastClaimedEra_ = s.lastClaimedEra;
+    }
+
+        /// @notice returns user active withdrawals
+    function getUserWithdrawals() external view returns (Withdrawal[] memory) {
+        return withdrawals[msg.sender];
+    }
+
+    function getUserWithdrawalsArray(address _user) external view returns (Withdrawal[] memory) {
+        return withdrawals[_user];
     }
 }   

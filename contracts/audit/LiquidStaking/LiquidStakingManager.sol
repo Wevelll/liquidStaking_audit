@@ -4,10 +4,10 @@ pragma solidity 0.8.4;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-contract LiquidStakingManager is AccessControlUpgradeable {
+contract LiquidStakingManager is Initializable, AccessControlUpgradeable {
     bytes32 public constant MANAGER = keccak256("MANAGER");
 
-    bool public paused;
+    bool public paused; // unused
 
     address[] public addresses;
     mapping(address => uint256) addressIndex;
@@ -31,24 +31,6 @@ contract LiquidStakingManager is AccessControlUpgradeable {
         _grantRole(MANAGER, msg.sender);
     }
 
-    // Pausable logic --------------------------------------------------------------------
-    // -----------------------------------------------------------------------------------
-
-    modifier whenNotPaused() {
-        require(!paused || hasRole(MANAGER, msg.sender), "Contract paused");
-        _;
-    }
-
-    function pause() external onlyRole(MANAGER) {
-        require(!paused, "Already paused");
-        paused = true;
-    }
-
-    function unpause() external onlyRole(MANAGER) {
-        require(paused, "Not paused");
-        paused = false;
-    }
-
     // Management logic ------------------------------------------------------------------
     // -----------------------------------------------------------------------------------
 
@@ -67,7 +49,7 @@ contract LiquidStakingManager is AccessControlUpgradeable {
     // External funcs --------------------------------------------------------------------
     // -----------------------------------------------------------------------------------
 
-    function getAddress(bytes4 selector) external view whenNotPaused returns (address) {
+    function getAddress(bytes4 selector) external view returns (address) {
         address addressFromSelector = selectorToAddress[selector];
         require(addressFromSelector != address(0), "Function does not exist");
         return addressFromSelector;
@@ -110,7 +92,8 @@ contract LiquidStakingManager is AccessControlUpgradeable {
         uint256 l = addressSelectors[_address].length;
         require(l > 0, "Unknown address");
 
-        for (uint256 i; i < l; i++) deleteSelector(addressSelectors[_address][i]);
+        for (uint256 i = l - 1; i > 0; i--) deleteSelector(addressSelectors[_address][i]);
+        deleteSelector(addressSelectors[_address][0]);
     }
 
     // View funcs ------------------------------------------------------------------------

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-// import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./interfaces/IDNT.sol";
 import "./interfaces/ILiquidStaking.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
 /*
  * @notice ERC20 DNT token distributor contract
@@ -14,7 +15,7 @@ import "./interfaces/ILiquidStaking.sol";
  * - Initializable
  * - AccessControlUpgradeable
  */
-contract NDistributor is AccessControl {
+contract NDistributor is Initializable, AccessControlUpgradeable {
     // DECLARATIONS
     // -------------------------------------------------------------------------------------------------------
     // ------------------------------- USER MANAGMENT
@@ -114,12 +115,13 @@ contract NDistributor is AccessControl {
     // @notice needed to show if the user has utility
     mapping(address => mapping(string => bool)) public userHasUtility;
 
-    mapping(string => uint256) public totalDnt;
     mapping(address => mapping(string => uint256)) public userUtitliesIdx;
     mapping(address => mapping(string => uint256)) public userDntsIdx;
 
     // @notice needed to implement grant/claim ownership pattern
     address private _grantedOwner;
+
+    mapping(string => uint256) public totalDnt;
 
     event Transfer(
         address indexed _from,
@@ -144,9 +146,15 @@ contract NDistributor is AccessControl {
     event AddUtility(string indexed newUtility);
     event OwnershipTransferred(address indexed owner, address indexed grantedOwner);
 
-    using Address for address;
-    
+    using AddressUpgradeable for address;
+    using StringsUpgradeable for string;
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public initializer {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MANAGER, msg.sender);
         owner = msg.sender;
@@ -369,6 +377,9 @@ contract NDistributor is AccessControl {
         return users[_user].dnt[_dnt].userUtils;
     }
 
+    function setTotalDnt(string memory _dnt, uint256 _amount) external onlyRole(MANAGER) {
+        totalDnt[_dnt] = _amount;
+    }
     /// @notice returns user dnt balances in utilities
     /// @param _user => user address
     /// @param _dnt => dnt name

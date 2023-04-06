@@ -4,17 +4,27 @@ pragma solidity 0.8.4;
 import "@openzeppelin/contracts-upgradeable/token/ERC721/presets/ERC721PresetMinterPauserAutoIdUpgradeable.sol";
 import "./NFTDistributor.sol";
 
-contract Algem721 is ERC721PresetMinterPauserAutoIdUpgradeable {
+contract AlgemLiquidStakingDiscount is ERC721PresetMinterPauserAutoIdUpgradeable {
 
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     NFTDistributor public nftDistr;
 
     string public utilName;
-    string public _baseTokenURI;
     uint256 public maxSupply;
 
     bool public initialized;
+
+    enum TokenType {
+        ALGEM, ARTHSWAP, ASTARCORE, ASTARDEGENS
+    }
+    mapping(uint256 => TokenType) public idToType;
+    mapping(TokenType => string) public typeToURI;
+
+    modifier updates() {
+        nftDistr.updates();
+        _;
+    }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -27,9 +37,10 @@ contract Algem721 is ERC721PresetMinterPauserAutoIdUpgradeable {
         string memory baseTokenURI
     ) public override initializer {
         super.initialize(name, symbol, baseTokenURI);
-        _baseTokenURI = baseTokenURI;
 
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MANAGER_ROLE, msg.sender);
+        _grantRole(MINTER_ROLE, msg.sender);
     }   
 
     function initialize2(
@@ -43,17 +54,9 @@ contract Algem721 is ERC721PresetMinterPauserAutoIdUpgradeable {
         utilName = _utilName;
         maxSupply = _maxSupply;
     }
-    
-    function _baseURI() internal view override returns (string memory) {
-        return _baseTokenURI;
-    }
 
     function haveTokens(address account) external view returns (bool) {
         return ERC721Upgradeable.balanceOf(account) > 0;
-    }
-
-    function changeBaseURI(string memory baseTokenURI_) external onlyRole(MANAGER_ROLE) {
-        _baseTokenURI = baseTokenURI_;
     }
 
     function changeMaxSupply(uint256 _maxSupply) external onlyRole(MANAGER_ROLE) {
@@ -61,24 +64,29 @@ contract Algem721 is ERC721PresetMinterPauserAutoIdUpgradeable {
         maxSupply = _maxSupply;
     }
 
-    function mintBatch(address[] memory accounts) public {
+    function setTypeURI(TokenType _type, string memory _uri) external onlyRole(MANAGER_ROLE) {
+        typeToURI[_type] = _uri;
+    }
+
+    function tokenURI(uint256 id) public view override returns (string memory) {
+        require(_exists(id), "Token does not exist!");
+        return typeToURI[idToType[id]];
+    }
+
+    function mintBatch(address[] memory accounts, TokenType _type) external onlyRole(MINTER_ROLE) {
         uint256 l = accounts.length;
         require(totalSupply() + l - 1 < maxSupply, "Token limit reached");
 
         for (uint256 i = 0; i < l; ) {
-            super.mint(accounts[i]);
+            mint(accounts[i], _type);
             unchecked { ++i; }
         }
     }
 
-    modifier updates() {
-        nftDistr.updates();
-        _;
-    }
-
-    function mint(address to) public override updates {
+    function mint(address to, TokenType _type) public updates onlyRole(MINTER_ROLE) {
         require(totalSupply() < maxSupply, "Token limit reached");
-
+        uint256 id = totalSupply();
+        idToType[id] = _type;
         super.mint(to);
     }
 
@@ -112,4 +120,5 @@ contract Algem721 is ERC721PresetMinterPauserAutoIdUpgradeable {
         require(role != DEFAULT_ADMIN_ROLE, "Not allowed to revoke admin role");
         _revokeRole(role, account);
     }
+
 }  

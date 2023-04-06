@@ -119,7 +119,7 @@ abstract contract LiquidStakingStorage {
     mapping(string => bool) public haveUtility;
     mapping(string => bool) public isActive;
     mapping(string => uint256) public deactivationEra;
-    mapping(uint256 => uint256) accumulatedRewardsPerShare;
+    mapping(uint256 => uint256) public accumulatedRewardsPerShare;
 
     uint256 public constant REWARDS_PRECISION = 1e12;
 
@@ -127,6 +127,8 @@ abstract contract LiquidStakingStorage {
     IAdaptersDistributor public adaptersDistr;
 
     address public liquidStakingManager;
+
+    bool public paused;
 
     event Staked(address indexed user, uint val);
     event StakedInUtility(address indexed user, string indexed utility, uint val);

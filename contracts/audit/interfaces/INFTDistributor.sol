@@ -13,4 +13,6 @@ interface INFTDistributor {
     function getBestUtilFee(string memory utility, uint8 fee) external view returns (uint8);
     function getEra(uint256 era) external view returns (uint256[2] memory);
     function updates() external;
+    function transferDnt(string memory utility, address from, address to, uint256 amount) external;
+    function multiTransferDnt(string[] memory utilities, address from, address to, uint256[] memory amounts) external;
 }

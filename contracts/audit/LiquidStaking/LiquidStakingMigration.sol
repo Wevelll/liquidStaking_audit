@@ -92,9 +92,8 @@ contract LiquidStakingMigration is AccessControlUpgradeable, LiquidStakingStorag
     ///      for each user to calculate his rewards for the past era
     /// @dev before starting the migration, you need to make a claim of 
     ///      rewards for all past eras and call the sync function for all non-updated eras
-    function migrateStorage(address _user) external onlyRole(MANAGER) {
+    function migrateStorage(address _user) public onlyRole(MANAGER) {
         if (_user == address(0)) return;
-
         uint256 _era = currentEra();
         dapps[utilName].stakers[_user].rewards = totalUserRewards[_user];
         dapps[utilName].stakers[_user].eraBalance[_era] = distr.getUserDntBalanceInUtil(_user, utilName, DNTname) - buffer[_user][_era];
@@ -102,6 +101,20 @@ contract LiquidStakingMigration is AccessControlUpgradeable, LiquidStakingStorag
         dapps[utilName].stakers[_user].eraBalance[_era + 1] = distr.getUserDntBalanceInUtil(_user, utilName, DNTname) - buffer[_user][_era + 1];
         dapps[utilName].stakers[_user].isZeroBalance[_era + 1] = dapps[utilName].stakers[_user].eraBalance[_era + 1] == 0 ? true : false;
         dapps[utilName].stakers[_user].lastClaimedEra = _era;
+    }
+
+    function migrateInternalStorage() external onlyRole(MANAGER) {
+        uint l = stakers.length;
+        for(uint i; i < l; i++){
+            migrateStorage(stakers[i]);
+        }
+    }
+
+    function migrateBatch(address[] memory _user) public onlyRole(MANAGER) {
+        uint l = _user.length;
+        for(uint i; i < l; i++){
+            migrateStorage(_user[i]);
+        }
     }
 
 }
